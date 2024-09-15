@@ -9,7 +9,7 @@ df = pd.read_csv('./2015-2024_rev2.csv')
 df['日付'] = pd.to_datetime(df['日付'])
 
 # タイトル
-st.title("時間範囲で絞り込んだ複数の野菜比較ダッシュボード")
+st.title("野菜市場動向を可視化する取引データダッシュボード")
 
 # 都市の選択
 city = st.selectbox('都市を選択してください', df['都市名'].unique())
