@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 
 # CSVファイルの読み込み（アップロードされたファイルを使用）
-df = pd.read_csv('./data/市場別/2015-2024_rev2.csv')
+df = pd.read_csv('./2015-2024_rev2.csv')
 
 # 日付列をdatetime型に変換
 df['日付'] = pd.to_datetime(df['日付'])
