@@ -1,15 +1,35 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 
 # CSVファイルの読み込み（アップロードされたファイルを使用）
-df = pd.read_csv('./2015-2024_rev2.csv')
+df = pd.read_csv('2015-2024_rev2.csv')
 
 # 日付列をdatetime型に変換
 df['日付'] = pd.to_datetime(df['日付'])
 
+# 野菜の種類に対応する色を定義
+color_map = {
+    'だいこん': 'lightgray',
+    'にんじん': 'orange',
+    'はくさい': 'limegreen',
+    'キャベツ': 'mediumseagreen',
+    'ほうれんそう': 'forestgreen',
+    'ねぎ': 'cyan',
+    'ブロッコリー': 'darkolivegreen',
+    'レタス': 'springgreen',
+    'きゅうり': 'mediumaquamarine',
+    'なす': 'mediumpurple',
+    'トマト': 'tomato',
+    'ピーマン': 'lightgreen',
+    'ばれいしょ': 'saddlebrown',
+    'さといも': 'slategray',
+    'たまねぎ': 'goldenrod'
+}
+
 # タイトル
-st.title("野菜市場動向を可視化するダッシュボード")
+st.title("カーソル位置の日付の価格データを表示するダッシュボード（代替案）")
 
 # 都市の選択
 city = st.selectbox('都市を選択してください', df['都市名'].unique())
@@ -30,19 +50,42 @@ filtered_data = df[(df['都市名'] == city) &
 # フィルタリングされたデータを表示
 st.write(f"選択された都市: {city}")
 st.write(f"選択された期間: {start_date} から {end_date}")
-st.write(filtered_data)
 
 if not selected_items:
     st.warning("比較する品目を選んでください。")
 else:
     # Plotlyを使って数量と価格の折れ線グラフを作成
-    fig_quantity = px.line(filtered_data, x='日付', y='数量', color='品目名',
-                           title=f'{city}の選択された品目の数量推移',
-                           hover_data=['日付', '数量', '価格'])
-    fig_price = px.line(filtered_data, x='日付', y='価格', color='品目名',
-                        title=f'{city}の選択された品目の価格推移',
-                        hover_data=['日付', '数量', '価格'])
+    fig = go.Figure()
+    
+    for item in selected_items:
+        item_data = filtered_data[filtered_data['品目名'] == item]
+        fig.add_trace(go.Scatter(
+            x=item_data['日付'], 
+            y=item_data['価格'], 
+            mode='lines',
+            name=item,
+            hovertemplate='%{x}<br>品目: ' + item + '<br>価格: %{y}',
+            line=dict(color=color_map[item])
+        ))
 
+    fig.update_layout(
+        title=f'{city}の選択された品目の価格推移',
+        xaxis_title='日付',
+        yaxis_title='価格',
+        hovermode='x unified'
+    )
+    
     # グラフをStreamlitで表示
-    st.plotly_chart(fig_quantity)
-    st.plotly_chart(fig_price)
+    st.plotly_chart(fig)
+
+    # 選択した日付のデータを表示する
+    # ユーザーが選択した日付
+    selected_date = st.date_input('データを表示する日付を選択してください', start_date)
+    
+    # 選択した日付のすべての品目のデータを表示
+    date_data = filtered_data[filtered_data['日付'] == pd.to_datetime(selected_date)]
+    if not date_data.empty:
+        st.write(f"{selected_date} の品目ごとの価格データ")
+        st.write(date_data[['品目名', '価格']])
+    else:
+        st.write(f"{selected_date} のデータはありません。")
