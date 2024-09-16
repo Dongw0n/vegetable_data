@@ -4,7 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # CSVファイルの読み込み（アップロードされたファイルを使用）
-df = pd.read_csv('./2015-2024_rev2.csv')
+df = pd.read_csv('2015-2024_rev2.csv')
 
 # 日付列をdatetime型に変換
 df['日付'] = pd.to_datetime(df['日付'])
@@ -34,12 +34,12 @@ st.title("野菜取引価格の可視化")
 # 都市の選択
 city = st.selectbox('都市を選択してください', df['都市名'].unique())
 
-# "すべての品目を選択する" チェックボックス
-all_selected = st.checkbox('すべての品目を選択する')
-
 # 品目のチェックボックスを3列に配置
 selected_items = []
 st.write("品目を選択してください:")
+
+# "すべての品目を選択する" チェックボックス
+all_selected = st.checkbox('すべての品目を選択する')
 
 # 3列のレイアウトを作成
 cols = st.columns(3)
