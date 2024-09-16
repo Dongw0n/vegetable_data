@@ -34,6 +34,16 @@ st.title("野菜取引価格の可視化")
 # 都市の選択
 city = st.selectbox('都市を選択してください', df['都市名'].unique())
 
+# 日付範囲を指定
+start_date = st.date_input('開始日', df['日付'].min())
+end_date = st.date_input('終了日', df['日付'].max())
+
+# 日付範囲でフィルタリング
+filtered_data = df[(df['都市名'] == city) & 
+                   (df['品目名'].isin(selected_items)) & 
+                   (df['日付'] >= pd.to_datetime(start_date)) & 
+                   (df['日付'] <= pd.to_datetime(end_date))]
+
 # 品目のチェックボックスを3列に配置
 selected_items = []
 st.write("品目を選択してください:")
@@ -51,16 +61,6 @@ for i, item in enumerate(items):
     # "すべての品目を選択する" がチェックされていれば、各チェックボックスをデフォルトでTrueに
     if col.checkbox(item, value=all_selected):
         selected_items.append(item)
-
-# 日付範囲を指定
-start_date = st.date_input('開始日', df['日付'].min())
-end_date = st.date_input('終了日', df['日付'].max())
-
-# 日付範囲でフィルタリング
-filtered_data = df[(df['都市名'] == city) & 
-                   (df['品目名'].isin(selected_items)) & 
-                   (df['日付'] >= pd.to_datetime(start_date)) & 
-                   (df['日付'] <= pd.to_datetime(end_date))]
 
 # フィルタリングされたデータを表示
 st.write(f"選択された都市: {city}")
