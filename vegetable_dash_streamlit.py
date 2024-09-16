@@ -1,13 +1,19 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 
-# CSVファイルの読み込み（アップロードされたファイルを使用）
+# 野菜取引価格のデータを読み込み
 df = pd.read_csv('./2015-2024_rev2.csv')
+
+# 為替レートデータの読み込み
+exchange_df = pd.read_csv('./USD_JPY 2015-2024.7.csv')
 
 # 日付列をdatetime型に変換
 df['日付'] = pd.to_datetime(df['日付'])
+exchange_df['日付け'] = pd.to_datetime(exchange_df['日付け'], format='%Y/%m/%d')
+
+# 必要な列を選択
+exchange_df = exchange_df[['日付け', '終値']]
 
 # 野菜の種類に対応する色を定義
 color_map = {
@@ -29,7 +35,7 @@ color_map = {
 }
 
 # タイトル
-st.title("野菜取引価格の可視化")
+st.title("野菜取引価格と為替レートの可視化")
 
 # 都市の選択
 city = st.selectbox('都市を選択してください', df['都市名'].unique())
@@ -56,6 +62,9 @@ for i, item in enumerate(items):
 start_date = st.date_input('開始日', df['日付'].min())
 end_date = st.date_input('終了日', df['日付'].max())
 
+# 為替レートの軸の表示を切り替えるチェックボックス
+show_exchange_rate = st.checkbox('為替レートの表示', value=True)
+
 # 日付範囲でフィルタリング
 filtered_data = df[(df['都市名'] == city) & 
                    (df['品目名'].isin(selected_items)) & 
@@ -72,6 +81,7 @@ else:
     # Plotlyを使って数量と価格の折れ線グラフを作成
     fig = go.Figure()
     
+    # 野菜価格の折れ線グラフを追加
     for item in selected_items:
         item_data = filtered_data[filtered_data['品目名'] == item]
         fig.add_trace(go.Scatter(
@@ -84,13 +94,44 @@ else:
             line=dict(color=color_map[item])
         ))
 
+    # 為替レートの表示がオンの場合にグラフに追加
+    if show_exchange_rate:
+        # 為替レートの折れ線グラフを追加（右側のy軸）
+        exchange_data_filtered = exchange_df[(exchange_df['日付け'] >= pd.to_datetime(start_date)) & 
+                                             (exchange_df['日付け'] <= pd.to_datetime(end_date))]
+
+        fig.add_trace(go.Scatter(
+            x=exchange_data_filtered['日付け'],
+            y=exchange_data_filtered['終値'],
+            mode='lines',
+            name='為替レート (USD/JPY)',
+            hovertemplate='USD/JPY : %{y:.2f}<extra></extra>',
+            line=dict(color='blue', dash='dash'),
+            yaxis='y2'  # 為替レートを右側のy軸に対応させる
+        ))
+
+    # グラフのレイアウトを設定
     fig.update_layout(
-        title=f'{city}の選択された品目の価格推移',
+        title=f'{city}の選択された品目の価格と為替レートの推移',
         xaxis_title='日付',
         yaxis_title='価格',
-        hovermode='x unified'
+        yaxis2=dict(
+            title='為替レート (USD/JPY)',
+            overlaying='y',  # y軸と重ねて表示
+            side='right',  # 右側にy軸を配置
+            showgrid=show_exchange_rate  # 為替レートの軸の表示設定
+        ),
+        hovermode='x unified',
+        legend=dict(
+            x=1.15,  # グラフの右外に凡例を配置
+            y=1,
+            xanchor='left',
+            yanchor='top',
+            font=dict(size=10)  # フォントサイズを小さくして調整
+        ),
+        margin=dict(r=120)  # グラフの右マージンを広げて凡例の重なりを防ぐ
     )
-    
+
     # グラフをStreamlitで表示
     st.plotly_chart(fig)
 
