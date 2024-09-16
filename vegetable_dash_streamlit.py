@@ -4,7 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # CSVファイルの読み込み（アップロードされたファイルを使用）
-df = pd.read_csv('2015-2024_rev2.csv')
+df = pd.read_csv('./2015-2024_rev2.csv')
 
 # 日付列をdatetime型に変換
 df['日付'] = pd.to_datetime(df['日付'])
@@ -29,13 +29,24 @@ color_map = {
 }
 
 # タイトル
-st.title("市場別野菜取引データ可視化")
+st.title("野菜取引価格の可視化")
 
 # 都市の選択
 city = st.selectbox('都市を選択してください', df['都市名'].unique())
 
-# 複数の野菜を選択
-selected_items = st.multiselect('比較する品目を選択してください', df['品目名'].unique())
+# 品目のチェックボックスを3列に配置
+selected_items = []
+st.write("品目を選択してください:")
+
+# 3列のレイアウトを作成
+cols = st.columns(3)
+items = df['品目名'].unique()
+
+# チェックボックスを3列に配置
+for i, item in enumerate(items):
+    col = cols[i % 3]  # 3列に分割
+    if col.checkbox(item):
+        selected_items.append(item)
 
 # 日付範囲を指定
 start_date = st.date_input('開始日', df['日付'].min())
@@ -52,7 +63,7 @@ st.write(f"選択された都市: {city}")
 st.write(f"選択された期間: {start_date} から {end_date}")
 
 if not selected_items:
-    st.warning("比較する品目を選んでください。")
+    st.warning("少なくとも1つの品目を選んでください。")
 else:
     # Plotlyを使って数量と価格の折れ線グラフを作成
     fig = go.Figure()
@@ -79,7 +90,6 @@ else:
     st.plotly_chart(fig)
 
     # 選択した日付のデータを表示する
-    # ユーザーが選択した日付
     selected_date = st.date_input('データを表示する日付を選択してください', start_date)
     
     # 選択した日付のすべての品目のデータを表示
