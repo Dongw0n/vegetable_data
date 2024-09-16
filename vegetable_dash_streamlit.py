@@ -4,7 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # CSVファイルの読み込み（アップロードされたファイルを使用）
-df = pd.read_csv('2015-2024_rev2.csv')
+df = pd.read_csv('./2015-2024_rev2.csv')
 
 # 日付列をdatetime型に変換
 df['日付'] = pd.to_datetime(df['日付'])
@@ -79,7 +79,8 @@ else:
             y=item_data['価格'], 
             mode='lines',
             name=item,
-            hovertemplate='%{x}<br>品目: ' + item + '<br>価格: %{y}',
+            hovertemplate=
+                item + ' : %{y:.2f}<extra></extra>',  # extraタグでホバーラベルをカスタマイズ
             line=dict(color=color_map[item])
         ))
 
