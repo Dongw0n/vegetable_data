@@ -34,6 +34,9 @@ st.title("野菜取引価格の可視化")
 # 都市の選択
 city = st.selectbox('都市を選択してください', df['都市名'].unique())
 
+# "すべての品目を選択する" チェックボックス
+all_selected = st.checkbox('すべての品目を選択する')
+
 # 品目のチェックボックスを3列に配置
 selected_items = []
 st.write("品目を選択してください:")
@@ -45,7 +48,8 @@ items = df['品目名'].unique()
 # チェックボックスを3列に配置
 for i, item in enumerate(items):
     col = cols[i % 3]  # 3列に分割
-    if col.checkbox(item):
+    # "すべての品目を選択する" がチェックされていれば、各チェックボックスをデフォルトでTrueに
+    if col.checkbox(item, value=all_selected):
         selected_items.append(item)
 
 # 日付範囲を指定
