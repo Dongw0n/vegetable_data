@@ -35,7 +35,7 @@ color_map = {
 }
 
 # タイトル
-st.title("野菜取引価格と為替レートの可視化")
+st.title("野菜取引価格の可視化")
 
 # 都市の選択
 city = st.selectbox('都市を選択してください', df['都市名'].unique())
