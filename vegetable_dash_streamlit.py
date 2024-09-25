@@ -8,12 +8,17 @@ df = pd.read_csv('./2015-2024_rev2.csv')
 # 為替レートデータの読み込み
 exchange_df = pd.read_csv('./USD_JPY 2015-2024.7.csv')
 
+# WTI原油データの読み込み
+wti_df = pd.read_csv('./WTI_2015-2024.7.csv')
+
 # 日付列をdatetime型に変換
 df['日付'] = pd.to_datetime(df['日付'])
 exchange_df['日付け'] = pd.to_datetime(exchange_df['日付け'], format='%Y/%m/%d')
+wti_df['日付'] = pd.to_datetime(wti_df['日付'], format='%Y/%m/%d')
 
 # 必要な列を選択
 exchange_df = exchange_df[['日付け', '終値']]
+wti_df = wti_df[['日付', '終値']]
 
 # 野菜の種類に対応する色を定義
 color_map = {
@@ -64,6 +69,10 @@ end_date = st.date_input('終了日', df['日付'].max(), key='end_date')
 # 都市の選択
 selected_city = st.selectbox('都市を選択してください', df['都市名'].unique(), key='selected_city_items')
 
+# 為替レートとWTI原油価格の表示を切り替えるチェックボックス
+show_exchange_rate = st.checkbox('為替レートの表示', value=True, key='show_exchange_rate')
+show_wti = st.checkbox('WTI原油価格の表示', value=True, key='show_wti')
+
 # 野菜価格グラフを作成
 if selected_items:
     filtered_data_items = df[(df['都市名'] == selected_city) & 
@@ -84,11 +93,60 @@ if selected_items:
             line=dict(color=color_map[item])
         ))
 
+    # 為替レートを表示
+    if show_exchange_rate:
+        exchange_data_filtered = exchange_df[(exchange_df['日付け'] >= pd.to_datetime(start_date)) & 
+                                             (exchange_df['日付け'] <= pd.to_datetime(end_date))]
+        fig_items.add_trace(go.Scatter(
+            x=exchange_data_filtered['日付け'],
+            y=exchange_data_filtered['終値'],
+            mode='lines',
+            name='為替レート (USD/JPY)',
+            hovertemplate='USD/JPY : %{y:.2f}<extra></extra>',
+            line=dict(color='blue', dash='dash'),
+            yaxis='y2'  # 右側に為替レートのy軸を配置
+        ))
+
+    # WTI原油価格を表示
+    if show_wti:
+        wti_data_filtered = wti_df[(wti_df['日付'] >= pd.to_datetime(start_date)) & 
+                                   (wti_df['日付'] <= pd.to_datetime(end_date))]
+        fig_items.add_trace(go.Scatter(
+            x=wti_data_filtered['日付'],
+            y=wti_data_filtered['終値'],
+            mode='lines',
+            name='WTI原油価格',
+            hovertemplate='WTI : %{y:.2f}<extra></extra>',
+            line=dict(color='black', dash='dot'),
+            yaxis='y3'  # さらに右側にWTI原油価格のy軸を配置
+        ))
+
     fig_items.update_layout(
-        title=f'{selected_city}の選択された野菜の価格推移',
+        title=f'{selected_city}の選択された野菜の価格、為替レート、WTI原油価格の推移',
         xaxis_title='日付',
         yaxis_title='価格',
-        hovermode='x unified'
+        yaxis2=dict(
+            title='為替レート (USD/JPY)',
+            overlaying='y',  # y軸と重ねて表示
+            side='right',
+            showgrid=show_exchange_rate  
+        ),
+        yaxis3=dict(
+            title='WTI原油価格',
+            overlaying='y',  
+            side='right',
+            position=1.0,  # 値を1.0に変更
+            showgrid=show_wti  
+        ),
+        hovermode='x unified',
+        legend=dict(
+            x=1.2,  
+            y=1,
+            xanchor='left',
+            yanchor='top',
+            font=dict(size=10)
+        ),
+        margin=dict(r=180)
     )
 
     st.plotly_chart(fig_items)
@@ -137,13 +195,65 @@ if selected_cities:
             hovertemplate=city + ' : %{y:.2f}<extra></extra>'
         ))
 
+    # 為替レートを表示
+    if show_exchange_rate:
+        exchange_data_filtered = exchange_df[(exchange_df['日付け'] >= pd.to_datetime(start_date)) & 
+                                             (exchange_df['日付け'] <= pd.to_datetime(end_date))]
+        fig_cities.add_trace(go.Scatter(
+                        x=exchange_data_filtered['日付け'],
+            y=exchange_data_filtered['終値'],
+            mode='lines',
+            name='為替レート (USD/JPY)',
+            hovertemplate='USD/JPY : %{y:.2f}<extra></extra>',
+            line=dict(color='blue', dash='dash'),
+            yaxis='y2'  # 為替レートを右側のy軸に配置
+        ))
+
+    # WTI原油価格を表示
+    if show_wti:
+        wti_data_filtered = wti_df[(wti_df['日付'] >= pd.to_datetime(start_date)) & 
+                                   (wti_df['日付'] <= pd.to_datetime(end_date))]
+        fig_cities.add_trace(go.Scatter(
+            x=wti_data_filtered['日付'],
+            y=wti_data_filtered['終値'],
+            mode='lines',
+            name='WTI原油価格',
+            hovertemplate='WTI : %{y:.2f}<extra></extra>',
+            line=dict(color='black', dash='dot'),
+            yaxis='y3'  # WTI原油価格をさらに右側のy軸に配置
+        ))
+
+    # グラフのレイアウトを設定
     fig_cities.update_layout(
         title=f'選択された品目「{selected_vegetable}」の都市間価格比較',
         xaxis_title='日付',
         yaxis_title='価格',
-        hovermode='x unified'
+        yaxis2=dict(
+            title='為替レート (USD/JPY)',
+            overlaying='y',  # y軸を重ねて表示
+            side='right',
+            showgrid=show_exchange_rate  # 為替レートの軸表示を制御
+        ),
+        yaxis3=dict(
+            title='WTI原油価格',
+            overlaying='y',  # y軸を重ねて表示
+            side='right',  # WTI原油価格の軸を右側に配置
+            position=1.0,  # 値を1.0に修正
+            showgrid=show_wti  # WTI原油価格の軸表示を制御
+        ),
+        hovermode='x unified',
+        legend=dict(
+            x=1.2,  # 凡例の位置
+            y=1,
+            xanchor='left',
+            yanchor='top',
+            font=dict(size=10)
+        ),
+        margin=dict(r=180)  # 右側のマージンを広げる
     )
 
+    # グラフをStreamlitで表示
     st.plotly_chart(fig_cities)
 else:
     st.warning("少なくとも1つの都市を選択してください。")
+
