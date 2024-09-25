@@ -40,10 +40,10 @@ color_map = {
 }
 
 # タイトル
-st.title("野菜取引価格、数量、為替レート、WTI原油価格の可視化")
+st.title("野菜取引データの可視化")
 
 # ======= 野菜ごとの比較 =======
-st.header("野菜ごとの価格と数量の比較")
+st.header("野菜ごとの比較")
 
 # 野菜の選択
 selected_items = []
@@ -186,7 +186,7 @@ else:
     st.warning("少なくとも1つの品目を選択してください。")
 
 # ======= 都市ごとの比較 =======
-st.header("都市ごとの価格と数量の比較")
+st.header("都市ごとの比較")
 
 # 野菜の選択（都市ごとの比較用）
 selected_vegetable = st.selectbox('比較する品目を選択してください', items, key='selected_vegetable')
