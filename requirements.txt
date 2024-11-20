@@ -4,3 +4,4 @@ plotly
 matplotlib
 matplotlib.pyplot
 japanize_matplotlib
+plotly.graph_objects
