@@ -46,7 +46,7 @@ combined_df['地域カテゴリ'] = combined_df['地域'].map(region_mapping)
 region_order = ['全国', '北海道-東北', '関東', '中部', '近畿', '中国', '四国', '九州-沖縄']
 
 # Streamlitアプリ
-st.title("基幹的農業従事者数の可視化（1995年～2050年）")
+st.title("基幹的農業従事者数の可視化")
 st.sidebar.header("オプション")
 
 # グラフ選択
