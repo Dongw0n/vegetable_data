@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
+import openpyxl
 
 # データファイルのパス
 data_file_path = './data/都道府県別_基幹的農業従事者数_年代別_1995-2020_5年毎/基幹的農業従事者数_統合データ.xlsx'
